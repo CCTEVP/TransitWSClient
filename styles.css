@@ -1,0 +1,119 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Segoe UI,
+    Tahoma,
+    Geneva,
+    Verdana,
+    sans-serif;
+  --bg: #f6f8fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #d1d5db;
+  --ok: #166534;
+  --bad: #b91c1c;
+  --accent: #0f766e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #eef2ff 0%, var(--bg) 50%, #ecfeff 100%);
+  color: var(--text);
+}
+
+.app {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+h1,
+h2 {
+  margin-top: 0;
+}
+
+.controls {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 0.8rem;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.status {
+  font-weight: 700;
+}
+
+.status.connected {
+  color: var(--ok);
+}
+
+.status.disconnected {
+  color: var(--bad);
+}
+
+.messages {
+  min-height: 280px;
+  max-height: 60vh;
+  overflow: auto;
+  background: #0b1020;
+  color: #d9e1ff;
+  border-radius: 12px;
+  border: 1px solid #1f2a44;
+  padding: 0.8rem;
+  font-family: Consolas, Monaco, monospace;
+  line-height: 1.45;
+}
+
+.message {
+  padding: 0.25rem 0;
+  border-bottom: 1px dashed #2e3b5d;
+}
+
+.message:last-child {
+  border-bottom: 0;
+}
+
+.timestamp {
+  color: #9ca3af;
+  margin-right: 0.5rem;
+}
