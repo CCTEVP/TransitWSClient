@@ -1,0 +1,51 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+#display {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#stateImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 18px;
+  text-align: center;
+  z-index: 10;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay.disconnected {
+  background: rgba(180, 20, 20, 0.85);
+}
