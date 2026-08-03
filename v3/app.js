@@ -1,4 +1,5 @@
-const WS_URL = "ws://localhost:8080/content";
+const WS_URL =
+  "wss://transitproject-763503917257.europe-west1.run.app/content";
 const RECONNECT_DELAY_MS = 3000;
 const HEARTBEAT_TIMEOUT_MS = 35000;
 
@@ -183,20 +184,25 @@ function playCommand(command) {
 }
 
 function onPlaybackFinished() {
-  if (currentCommand === "RET_NO_TRAIN" && isInitialNoTrain) {
+  const finishedCommand = currentCommand;
+
+  if (finishedCommand === "RET_NO_TRAIN" && isInitialNoTrain) {
     isInitialNoTrain = false;
   }
 
   isPlaying = false;
   currentCommand = null;
 
-  if (!queuedCommand) {
+  if (queuedCommand) {
+    const nextCommand = queuedCommand;
+    queuedCommand = null;
+    playCommand(nextCommand);
     return;
   }
 
-  const nextCommand = queuedCommand;
-  queuedCommand = null;
-  playCommand(nextCommand);
+  if (finishedCommand === "RET_TRAIN_DEPARTED") {
+    playCommand("RET_NO_TRAIN");
+  }
 }
 
 function resetHeartbeat() {
