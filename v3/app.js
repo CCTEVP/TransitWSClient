@@ -1,8 +1,8 @@
 const WS_URL =
   "wss://transitproject-763503917257.europe-west1.run.app/content";
 const RECONNECT_DELAY_MS = 3000;
-const HEARTBEAT_TIMEOUT_MS = 35000;
-const LAST_COMMAND_KEY = "transitDisplay.lastCommand";
+// Must be > server WS_PING_INTERVAL_MS (default 25s). JSON heartbeats reset this.
+const HEARTBEAT_TIMEOUT_MS = 70000;
 
 const commandVideoMap = {
   RET_NO_TRAIN: "videos/no-train_1080x1920.mp4",
@@ -43,27 +43,6 @@ function isKnownCommand(command) {
   return Boolean(commandVideoMap[command]);
 }
 
-function loadLastCommand() {
-  try {
-    const command = localStorage.getItem(LAST_COMMAND_KEY);
-    return isKnownCommand(command) ? command : "RET_NO_TRAIN";
-  } catch {
-    return "RET_NO_TRAIN";
-  }
-}
-
-function saveLastCommand(command) {
-  if (!isKnownCommand(command)) {
-    return;
-  }
-
-  try {
-    localStorage.setItem(LAST_COMMAND_KEY, command);
-  } catch {
-    // Ignore private-mode / quota errors.
-  }
-}
-
 function swapActiveVideo(nextVideo) {
   activeVideo.classList.remove("active");
   inactiveVideo.classList.remove("active");
@@ -102,7 +81,6 @@ function startVideoPlayback(video, command, onEnded) {
       swapActiveVideo(video);
       isPlaying = true;
       currentCommand = command;
-      saveLastCommand(command);
       if (command !== "RET_NO_TRAIN") {
         isInitialNoTrain = false;
       }
@@ -231,18 +209,32 @@ function onPlaybackFinished() {
 function resetHeartbeat() {
   clearTimeout(heartbeatTimer);
   heartbeatTimer = setTimeout(() => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      return;
+    }
     console.log("[WS] No heartbeat received, reconnecting...");
-    if (socket) socket.close();
+    try {
+      socket.close();
+    } catch {
+      // ignore
+    }
   }, HEARTBEAT_TIMEOUT_MS);
 }
 
 function cleanup() {
   clearTimeout(heartbeatTimer);
+  heartbeatTimer = null;
   socket = null;
 }
 
 function connect() {
-  if (socket && socket.readyState === WebSocket.OPEN) return;
+  if (
+    socket &&
+    (socket.readyState === WebSocket.OPEN ||
+      socket.readyState === WebSocket.CONNECTING)
+  ) {
+    return;
+  }
 
   setConnectionState(false);
 
@@ -255,6 +247,8 @@ function connect() {
   }
 
   socket.addEventListener("open", () => {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
     setConnectionState(true);
     resetHeartbeat();
     console.log("[WS] Connected to", WS_URL);
@@ -282,7 +276,9 @@ function connect() {
   });
 
   socket.addEventListener("error", () => {
-    if (socket) socket.close();
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.close();
+    }
   });
 }
 
@@ -294,7 +290,5 @@ function scheduleReconnect() {
   }, RECONNECT_DELAY_MS);
 }
 
-const startupCommand = loadLastCommand();
-isInitialNoTrain = startupCommand === "RET_NO_TRAIN";
-enqueueCommand(startupCommand);
+// Wait for the server to push current state (and later live commands).
 connect();
