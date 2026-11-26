@@ -1,4 +1,35 @@
-const WS_URL = "ws://localhost:8080/content";
+// Server selection, from the page URL:
+//   ?server=local   -> ws://localhost:8282
+//   ?server=remote  -> Cloud Run (SERVER_PRESETS.remote)
+//   ?server=<host[:port]> or ?server=<ws/wss/http/https URL>
+// Default: local when this page is opened from a file or localhost, otherwise remote.
+const SERVER_PRESETS = {
+  local: "ws://localhost:8282",
+  remote: "wss://transitproject-763503917257.europe-west1.run.app",
+};
+
+function resolveServerBase() {
+  const choice = new URLSearchParams(location.search).get("server");
+  if (!choice) {
+    return location.protocol === "file:" ||
+      ["", "localhost", "127.0.0.1", "[::1]"].includes(location.hostname)
+      ? SERVER_PRESETS.local
+      : SERVER_PRESETS.remote;
+  }
+  if (SERVER_PRESETS[choice]) {
+    return SERVER_PRESETS[choice];
+  }
+  const trimmed = choice.trim().replace(/\/+$/, "").replace(/\/(content|control)$/i, "");
+  if (/^wss?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed.replace(/^http/i, "ws");
+  }
+  return `${location.protocol === "https:" ? "wss" : "ws"}://${trimmed}`;
+}
+
+const WS_URL = `${resolveServerBase()}/content`;
 const RECONNECT_DELAY_MS = 3000;
 const HEARTBEAT_TIMEOUT_MS = 35000;
 

@@ -12,7 +12,11 @@
 
       <section class="controls">
         <label for="wsUrl">WebSocket URL</label>
-        <input id="wsUrl" type="text" value="ws://localhost:8080/content" />
+        <input id="wsUrl" type="text" value="ws://localhost:8282/content" />
+        <div class="buttons presets">
+          <button type="button" data-server="local">Local server</button>
+          <button type="button" data-server="remote">Cloud Run</button>
+        </div>
 
         <div class="buttons">
           <button id="connectBtn" type="button">Connect</button>
